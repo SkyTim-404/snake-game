@@ -1,7 +1,7 @@
 class Food {
-    constructor(properties, position) {
+    constructor(properties) {
         this.properties = properties;
-        this.position = position;
+        this.position = new Position();
     }
 
     show() {
@@ -13,7 +13,10 @@ class Food {
         );
     }
 
-    reset() {
+    reset(snakePositions) {
         this.position.setRandomly(this.properties);
+        while (this.position.in(snakePositions)) {
+            this.position.setRandomly(this.properties);
+        }
     }
 }

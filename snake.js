@@ -14,10 +14,7 @@ const Movement = {
 class Snake {
     constructor(properties, position) {
         this.properties = properties;
-        this.direction = Direction.RIGHT;
-        this.positions = [];
         this.startPosition = position;
-        this.positions.push(new Position(this.startPosition.x, this.startPosition.y));
     }
 
     head() {
@@ -53,7 +50,7 @@ class Snake {
         }
     }
 
-    updateDirection(direction) {
+    setDirection(direction) {
         switch (direction) {
             case Direction.UP:
                 this.setDirectionUp();
@@ -66,6 +63,19 @@ class Snake {
                 break;
             case Direction.RIGHT:
                 this.setDirectionRight();
+                break;
+            default:
+                break;
+        }
+    }
+
+    setDirectionWithMovement(movement) {
+        switch (movement) {
+            case Movement.LEFT:
+                this.turnLeft();
+                break;
+            case Movement.RIGHT:
+                this.turnRight();
                 break;
             default:
                 break;

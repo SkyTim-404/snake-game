@@ -26,9 +26,9 @@ function argmax(vector) {
     let max = Number.NEGATIVE_INFINITY;
     let maxIndex = 0;
     for (let x of vector) {
-        if (x["value"] > max) {
-            maxIndex = x["index"][0];
-            max = x["value"];
+        if (x.value > max) {
+            maxIndex = x.index[0];
+            max = x.value;
         }
     }
     return maxIndex;

@@ -1,5 +1,7 @@
 class QNet {
-    constructor(inNodes, h1Nodes, h2Nodes, outNodes) {
+    constructor(learningRate, gamma, inNodes, h1Nodes, h2Nodes, outNodes) {
+        this.lr = learningRate;
+        this.gamma = gamma;
         this.inNodes = inNodes;
         this.h1Nodes = h1Nodes;
         this.h2Nodes = h2Nodes;
@@ -13,15 +15,16 @@ class QNet {
         this.relu = new ReLU();
     }
 
-    forward(input) {
-        let h1 = this.relu.forward(math.add(math.multiply(this.M1, input), this.b1));
+    forward(state) {
+        let h1 = this.relu.forward(math.add(math.multiply(this.M1, state), this.b1));
         let h2 = this.relu.forward(math.add(math.multiply(this.M2, h1), this.b2));
-        let output = math.add(math.multiply(this.M3, h2), this.b3);
-        return output;
+        let decisions = math.add(math.multiply(this.M3, h2), this.b3);
+        return [state, h1, h2, decisions];
     }
 
-    backward() {
-        
+    backward(currStateOutput, nextStateOutput, movement, response) {
+        let reward = response[0];
+        let gameEnd = response[1];
     }
 
     save(filename) {

@@ -1,12 +1,11 @@
 class Board {
-    constructor(properties) {
+    constructor(properties, learningRate, gamma) {
         this.properties = properties;
         this.snakeStartPosition = new Position(3, 3);
-        this.foodStartPosition = new Position(20, 20);
         this.snake = new Snake(this.properties, this.snakeStartPosition);
-        this.food = new Food(this.properties, this.foodStartPosition);
-        this.model = new QNet(11, 8, 8, 3);
-        this.timeController = 0;
+        this.food = new Food(this.properties);
+        this.model = new QNet(learningRate, gamma, 11, 8, 8, 3);
+        this.reset();
     }
 
     show() {
@@ -14,43 +13,49 @@ class Board {
         this.snake.show();
     }
 
-    update() {
-        this.timeController += 1;
-        let output = this.model.forward(this.getState())
-        let movement = argmax(output);
-        switch (movement) {
-            case Movement.LEFT:
-                this.snake.turnLeft();
-                break;
-            case Movement.RIGHT:
-                this.snake.turnRight();
-                break;
-            default:
-                break;
+    update(humanPlaying) {
+        if (humanPlaying) {
+            this.moveSnake();
+            return;
         }
+        let currStateOutput = this.model.forward(this.getState());
+        let movement = argmax(currStateOutput[3]);
+        this.snake.setDirectionWithMovement(movement);
+        let response = this.moveSnake();
+        let nextStateOutput = this.model.forward(this.getState());
+        this.checkTimeLimit();
+    }
+
+    moveSnake() {
+        let reward = 0;
+        let gameEnd = false;
         if (this.snake.onFood(this.food)) {
+            reward = 10;
             this.snake.eat(this.food);
-            this.food.reset();
+            this.food.reset(this.snake.positions);
         }
         else {
             this.snake.move();
         }
-        this.checkReset();
+        if (this.snake.isDead()) {
+            reward = -10;
+            gameEnd = true;
+            this.reset();
+        }
+        return [reward, gameEnd];
     }
 
-    checkReset() {
-        if (this.snake.isDead() || this.timeController >= 200) {
+    checkTimeLimit() {
+        this.timeLimit += 1;
+        if (this.timeLimit > 100*this.snake.length()) {
             this.reset();
         }
     }
 
     reset() {
+        this.timeLimit = 0;
         this.snake.reset();
-        this.food.reset();
-        while (this.food.position.in(this.snake.positions)) {
-            this.food.position.setRandomly(this.properties);
-        }
-        this.timeController = 0;
+        this.food.reset(this.snake.positions);
     }
 
     getState() {

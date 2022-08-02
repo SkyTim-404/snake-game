@@ -1,31 +1,34 @@
-// hyper parameters
+// controll parameters
 let humanPlaying = false;
-let canvasSize = 600;
-let boxSize = 20;
 let speedMultiplier = 3;
-let debugModeOn = true;
 
-// global parameters
+// game parameters
+const canvasSize = 600;
+const boxSize = 20;
+const baseSpeed = 3;
+
+// model parameters
+const gamma = 0.9;
+const learningRate = 0.001;
+
+// global parameters (do not touch)
+let showSnakeData = false;
 let currentDirection = Direction.RIGHT;
 let properties = new Properties(canvasSize, boxSize);
 let board;
 
 function setup() {
-    board = new Board(properties);
-    // board.model.save("model");
-    // board.model.load("model");
-    // console.log(board.model.forward(board.getState()));
-    // console.log(board.getState());
     createCanvas(canvasSize, canvasSize);
+    board = new Board(properties, learningRate, gamma);
 }
 
 function draw() {
     background(15); // Black
-    if (debugModeOn) showSnakePosition(board.snake);
     controlFrameRate();
-    if (humanPlaying) board.snake.updateDirection(currentDirection);
+    if (showSnakeData) showSnakePosition(board.snake);
+    if (humanPlaying) board.snake.setDirection(currentDirection); // player only change snake direction once per frame
     board.show();
-    board.update();
+    board.update(humanPlaying);
 }
 
 function keyPressed() {
@@ -56,7 +59,7 @@ function keyPressed() {
             debugModeOn = !debugModeOn;
             break;
         case 80: // Key: p
-            speedMultiplier = -speedMultiplier;
+            humanPlaying = !humanPlaying;
             break;
         default:
             break;
@@ -64,5 +67,5 @@ function keyPressed() {
 }
 
 function controlFrameRate() {
-    frameRate(3 * speedMultiplier);
+    frameRate(baseSpeed * speedMultiplier);
 }
