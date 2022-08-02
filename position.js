@@ -33,4 +33,13 @@ class Position {
         }
         return false;
     }
+
+    isOutOfBound(properties) {
+        let outOfBound =
+            this.x < 0 ||
+            this.x >= properties.gridSize ||
+            this.y < 0 ||
+            this.y >= properties.gridSize;
+        return outOfBound;
+    }
 }

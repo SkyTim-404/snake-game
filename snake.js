@@ -1,24 +1,33 @@
+const Direction = {
+    UP: 0,
+    DOWN: 1,
+    LEFT: 2,
+    RIGHT: 3,
+};
+
+const Movement = {
+    STRAIGHT: 0,
+    LEFT: 1,
+    RIGHT: 2,
+}
+
 class Snake {
-    constructor(properties) {
+    constructor(properties, position) {
         this.properties = properties;
         this.direction = Direction.RIGHT;
         this.positions = [];
-        this.positions.push(new Position(3, 3));
+        this.startPosition = position;
+        this.positions.push(new Position(this.startPosition.x, this.startPosition.y));
+    }
+
+    head() {
+        return this.positions[0];
     }
 
     show() {
         fill(255); // White
         for (let position of this.positions) {
-            square(
-                position.x * this.properties.boxSize,
-                position.y * this.properties.boxSize,
-                this.properties.boxSize
-            );
-        }
-        if (this.onFood()) {
-            this.eat();
-        } else {
-            this.move();
+            square(position.x * this.properties.boxSize, position.y * this.properties.boxSize, this.properties.boxSize);
         }
     }
 
@@ -44,18 +53,134 @@ class Snake {
         }
     }
 
+    updateDirection(direction) {
+        switch (direction) {
+            case Direction.UP:
+                this.setDirectionUp();
+                break;
+            case Direction.DOWN:
+                this.setDirectionDown();
+                break;
+            case Direction.LEFT:
+                this.setDirectionLeft();
+                break;
+            case Direction.RIGHT:
+                this.setDirectionRight();
+                break;
+            default:
+                break;
+        }
+    }
+    
+    turnLeft() {
+        switch (this.direction) {
+            case Direction.UP:
+                this.direction = Direction.LEFT;
+                break;
+            case Direction.DOWN:
+                this.direction = Direction.RIGHT;
+                break;
+            case Direction.LEFT:
+                this.direction = Direction.DOWN;
+                break;
+            case Direction.RIGHT:
+                this.direction = Direction.UP;
+                break;
+            default:
+                break;
+        }
+    }
+
+    turnRight() {
+        switch (this.direction) {
+            case Direction.UP:
+                this.direction = Direction.RIGHT;
+                break;
+            case Direction.DOWN:
+                this.direction = Direction.LEFT;
+                break;
+            case Direction.LEFT:
+                this.direction = Direction.UP;
+                break;
+            case Direction.RIGHT:
+                this.direction = Direction.DOWN;
+                break;
+            default:
+                break;
+        }
+    }
+
+    frontIsDangerous() {
+        let position;
+        switch (this.direction) {
+            case Direction.UP:
+                position = new Position(this.head().x, this.head().y-1);
+                break;
+            case Direction.DOWN:
+                position = new Position(this.head().x, this.head().y+1);
+                break;
+            case Direction.LEFT:
+                position = new Position(this.head().x-1, this.head().y);
+                break;
+            case Direction.RIGHT:
+                position = new Position(this.head().x+1, this.head().y);
+                break;
+            default:
+                break;
+        }
+        return position.isOutOfBound(this.properties) || position.in(this.positions);
+    }
+
+    leftIsDangerous() {
+        let position;
+        switch (this.direction) {
+            case Direction.UP:
+                position = new Position(this.head().x-1, this.head().y);
+                break;
+            case Direction.DOWN:
+                position = new Position(this.head().x+1, this.head().y);
+                break;
+            case Direction.LEFT:
+                position = new Position(this.head().x, this.head().y+1);
+                break;
+            case Direction.RIGHT:
+                position = new Position(this.head().x, this.head().y-1);
+                break;
+            default:
+                break;
+        }
+        return position.isOutOfBound(this.properties) || position.in(this.positions);
+    }
+
+    rightIsDangerous() {
+        let position;
+        switch (this.direction) {
+            case Direction.UP:
+                position = new Position(this.head().x+1, this.head().y);
+                break;
+            case Direction.DOWN:
+                position = new Position(this.head().x-1, this.head().y);
+                break;
+            case Direction.LEFT:
+                position = new Position(this.head().x, this.head().y-1);
+                break;
+            case Direction.RIGHT:
+                position = new Position(this.head().x, this.head().y+1);
+                break;
+            default:
+                break;
+        }
+        return position.isOutOfBound(this.properties) || position.in(this.positions);
+    }
+
     isDead() {
-        let outOfBound =
-            this.positions[0].x < 0 ||
-            this.positions[0].x >= this.properties.gridSize ||
-            this.positions[0].y < 0 ||
-            this.positions[0].y >= this.properties.gridSize;
-        let crashedOnTail = this.positions[0].in(this.positions.slice(1));
+        let outOfBound = this.head().isOutOfBound(this.properties);
+        let crashedOnTail = this.head().in(this.positions.slice(1));
         return outOfBound || crashedOnTail;
     }
 
-    onFood() {
-        return this.positions[0].equals(board.food.position);
+    onFood(food) {
+        return this.positions[0].equals(food.position);
     }
 
     setDirectionUp() {
@@ -78,36 +203,23 @@ class Snake {
         this.direction = Direction.RIGHT;
     }
 
-    eat() {
+    eat(food) {
         switch (this.direction) {
             case Direction.UP:
-                this.positions.unshift(
-                    new Position(
-                        board.food.position.x, board.food.position.y - 1)
-                );
+                this.positions.unshift(new Position(food.position.x, food.position.y - 1));
                 break;
             case Direction.DOWN:
-                this.positions.unshift(
-                    new Position(
-                        board.food.position.x, board.food.position.y + 1)
-                );
+                this.positions.unshift(new Position(food.position.x, food.position.y + 1));
                 break;
             case Direction.LEFT:
-                this.positions.unshift(
-                    new Position(
-                        board.food.position.x - 1, board.food.position.y)
-                );
+                this.positions.unshift(new Position(food.position.x - 1, food.position.y));
                 break;
             case Direction.RIGHT:
-                this.positions.unshift(
-                    new Position(
-                        board.food.position.x + 1, board.food.position.y)
-                );
+                this.positions.unshift(new Position(food.position.x + 1, food.position.y));
                 break;
             default:
                 break;
         }
-        board.food.reset();
     }
 
     length() {
@@ -117,32 +229,25 @@ class Snake {
     reset() {
         this.direction = Direction.RIGHT;
         this.positions = [];
-        this.positions.push(new Position(3, 3));
+        this.positions.push(new Position(this.startPosition.x, this.startPosition.y));
     }
 }
 
-const Direction = {
-    UP: 0,
-    DOWN: 1,
-    LEFT: 2,
-    RIGHT: 3,
-};
-
-function showSnakePosition() {
+function showSnakePosition(snake) {
     fill(0, 255, 0); // light green
-    rect(board.properties.canvasSize, 0, 200, board.properties.canvasSize);
+    rect(snake.properties.canvasSize, 0, 200, snake.properties.canvasSize);
     textSize(45);
     fill(0);
-    text("Score: " + board.snake.length(), 610, 50);
+    text("Score: " + snake.length(), 610, 50);
     textSize(32);
     fill(220, 0, 200);
-    for (let i in board.snake.positions) {
+    for (let i in snake.positions) {
         text(
             i +
             "  [" +
-            board.snake.positions[i].x +
+            snake.positions[i].x +
             ", " +
-            board.snake.positions[i].y +
+            snake.positions[i].y +
             "]",
             620,
             100 + i * 30
