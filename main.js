@@ -54,9 +54,9 @@ function keyPressed() {
             speedMultiplier++;
             break;
         case 48: // Key: 0
-            if (debugModeOn) resizeCanvas(canvasSize, canvasSize);
+            if (showSnakeData) resizeCanvas(canvasSize, canvasSize);
             else resizeCanvas(canvasSize + 200, canvasSize)
-            debugModeOn = !debugModeOn;
+            showSnakeData = !showSnakeData;
             break;
         case 80: // Key: p
             humanPlaying = !humanPlaying;

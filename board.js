@@ -23,6 +23,7 @@ class Board {
         this.snake.setDirectionWithMovement(movement);
         let response = this.moveSnake();
         let nextStateOutput = this.model.forward(this.getState());
+        this.model.backward(currStateOutput, nextStateOutput, movement, response);
         this.checkTimeLimit();
     }
 
