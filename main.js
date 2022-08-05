@@ -20,6 +20,7 @@ let board;
 function setup() {
     createCanvas(canvasSize, canvasSize);
     board = new Board(properties, learningRate, gamma);
+    // saveModel(board.model, "model.json");
 }
 
 function draw() {

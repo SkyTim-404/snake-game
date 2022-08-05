@@ -33,3 +33,18 @@ function argmax(vector) {
     }
     return maxIndex;
 }
+
+function onehot(index, size) {
+    vector = new Array(size).fill(0);
+    vector[index] = 1;
+    vector = math.reshape(math.matrix(vector), [size, 1]);
+    return vector;
+}
+
+function ascendingArray(size) {
+    let arr = [];
+    for (let i = 0; i < size; i++) {
+        arr.push(i);
+    }
+    return arr;
+}
