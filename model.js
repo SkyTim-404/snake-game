@@ -72,7 +72,7 @@ class QNet {
     }
 
     load(filename) {
-        this = loadModel(filename);
+        
     }
 }
 
