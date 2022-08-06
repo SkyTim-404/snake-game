@@ -12,9 +12,10 @@ const Movement = {
 }
 
 class Snake {
-    constructor(properties, position) {
+    constructor(properties, position, length) {
         this.properties = properties;
         this.startPosition = position;
+        this.startLength = length;
     }
 
     head() {
@@ -239,28 +240,8 @@ class Snake {
     reset() {
         this.direction = Direction.RIGHT;
         this.positions = [];
-        this.positions.push(new Position(this.startPosition.x, this.startPosition.y));
-    }
-}
-
-function showSnakePosition(snake) {
-    fill(0, 255, 0); // light green
-    rect(snake.properties.canvasSize, 0, 200, snake.properties.canvasSize);
-    textSize(45);
-    fill(0);
-    text("Score: " + snake.length(), 610, 50);
-    textSize(32);
-    fill(220, 0, 200);
-    for (let i in snake.positions) {
-        text(
-            i +
-            "  [" +
-            snake.positions[i].x +
-            ", " +
-            snake.positions[i].y +
-            "]",
-            620,
-            100 + i * 30
-        );
+        for (let i = 0; i < this.startLength; i++) {
+            this.positions.push(new Position(this.startPosition.x-i, this.startPosition.y));
+        }
     }
 }

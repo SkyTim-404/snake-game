@@ -1,10 +1,13 @@
 class Board {
     constructor(properties, learningRate, gamma) {
         this.properties = properties;
-        this.snakeStartPosition = new Position(7, 7);
-        this.snake = new Snake(this.properties, this.snakeStartPosition);
+        let snakeStartPosition = new Position(7, 7);
+        let snakeStartLength = 3;
+        this.snake = new Snake(this.properties, snakeStartPosition, snakeStartLength);
         this.food = new Food(this.properties);
-        this.model = new QNet(learningRate, gamma, 12, 16, 16, 3);
+        this.model = new QNet(learningRate, gamma, 11, 16, 16, 3);
+        this.maxScore = 0;
+        this.numOfGames = 0;
         this.reset();
     }
 
@@ -16,15 +19,32 @@ class Board {
     update(humanPlaying) {
         if (humanPlaying) {
             this.moveSnake();
-            return;
         }
-        let currStateOutput = this.model.forward(this.getState());
-        let movement = argmax(currStateOutput[3]);
-        this.snake.setDirectionWithMovement(movement);
-        let response = this.moveSnake();
-        let nextStateOutput = this.model.forward(this.getState());
-        this.model.backward(currStateOutput, nextStateOutput, movement, response);
-        this.checkTimeLimit();
+        else {
+            let currStateOutput = this.model.forward(this.getState());
+            let movement = argmax(currStateOutput[3]);
+            this.snake.setDirectionWithMovement(movement);
+            this.updatePastMovements(movement);
+            let response = this.moveSnake();
+            let nextStateOutput = this.model.forward(this.getState());
+            this.model.backward(currStateOutput, nextStateOutput, movement, response);
+        }
+        this.maxScore = max(this.maxScore, this.getScore());
+    }
+
+    updatePastMovements(movement) {
+        this.pastMovements.push(movement);
+        if (this.pastMovements.length > 4) this.pastMovements.shift();
+    }
+
+    checkPastMovementsEquals() {
+        if (this.pastMovements.length < 4) return false;
+        if (this.pastMovements[0] === Movement.STRAIGHT) return false;
+        let isEqual = true;
+        for (let i = 0; i < this.pastMovements.length-1; i++) {
+            isEqual = isEqual && (this.pastMovements[i] === this.pastMovements[i+1]);
+        }
+        return isEqual;
     }
 
     moveSnake() {
@@ -37,7 +57,7 @@ class Board {
             this.timer = 0;
         }
         else {
-            reward = -this.timer/this.timeLimit();
+            reward = this.checkPastMovementsEquals() ? Reward.LOOP : Reward.LOOP * this.timer/this.timeLimit();
             this.snake.move();
         }
         if (this.snake.isDead() || this.checkTimeLimit()) {
@@ -59,6 +79,8 @@ class Board {
 
     reset() {
         this.timer = 0;
+        this.numOfGames += 1;
+        this.pastMovements = [];
         this.snake.reset();
         this.food.reset(this.snake.positions);
     }
@@ -79,8 +101,38 @@ class Board {
         state.push(this.snake.frontIsDangerous() | 0);
         state.push(this.snake.leftIsDangerous() | 0);
         state.push(this.snake.rightIsDangerous() | 0);
-        // time
-        state.push(this.timer/this.timeLimit());
         return state;
+    }
+
+    getScore() {
+        return this.snake.length() - this.snake.startLength;
+    }
+
+    showSnakeDetails() {
+        textSize(36);
+        fill(0);
+        text("Length: " + this.snake.length(), 610, 50);
+        textSize(32);
+        fill(100, 0, 200);
+        for (let i in this.snake.positions) {
+            text(
+                i +
+                "  [" +
+                this.snake.positions[i].x +
+                ", " +
+                this.snake.positions[i].y +
+                "]",
+                620,
+                100 + i * 30
+            );
+        }
+    }
+
+    showGameScore() {
+        textSize(36);
+        fill(0);
+        text("Score: " + this.getScore(), 610, 50);
+        text("Max Score: " + this.maxScore, 610, 100);
+        text("No. of Games: \n" + this.numOfGames, 610, 150);
     }
 }

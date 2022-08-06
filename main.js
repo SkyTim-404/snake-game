@@ -5,6 +5,7 @@ let speedMultiplier = 3;
 // game parameters
 const canvasSize = 600;
 const boxSize = 20;
+const detailBoardSize = 300;
 const baseSpeed = 3;
 
 // model parameters
@@ -18,15 +19,20 @@ let properties = new Properties(canvasSize, boxSize);
 let board;
 
 function setup() {
-    createCanvas(canvasSize, canvasSize);
+    createCanvas(canvasSize+detailBoardSize, canvasSize);
     board = new Board(properties, learningRate, gamma);
     // saveModel(board.model, "model.json");
 }
 
 function draw() {
     background(15); // Black
+    fill(0, 255, 0); // light green
+    rect(canvasSize, 0, detailBoardSize, canvasSize);
+    fill(255);
+    text(""+speedMultiplier, 850, 30);
     controlFrameRate();
-    if (showSnakeData) showSnakePosition(board.snake);
+    if (showSnakeData) board.showSnakeDetails();
+    else board.showGameScore();
     if (humanPlaying) board.snake.setDirection(currentDirection); // player only change snake direction once per frame
     board.show();
     board.update(humanPlaying);
@@ -55,8 +61,6 @@ function keyPressed() {
             speedMultiplier++;
             break;
         case 48: // Key: 0
-            if (showSnakeData) resizeCanvas(canvasSize, canvasSize);
-            else resizeCanvas(canvasSize + 200, canvasSize)
             showSnakeData = !showSnakeData;
             break;
         case 80: // Key: p
