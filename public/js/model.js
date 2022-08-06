@@ -69,7 +69,7 @@ class QNet {
     }
 
     save(filename) {
-        saveJSON(this, filename);
+        
     }
 
     load(filename) {
