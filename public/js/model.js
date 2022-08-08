@@ -70,7 +70,7 @@ class QNet {
 
     save(filename) {
         this.filename = filename;
-        fetch("http://localhost:3000/model-data", {
+        fetch(window.location.href + "model-data", {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ function saveModelData(model, filename) {
 }
 
 async function loadModelData(filename) {
-    let res = await fetch("http://localhost:3000/model-data?" + new URLSearchParams({
+    let res = await fetch(window.location.href + "model-data?" + new URLSearchParams({
         filename: filename
     }), {
         headers: {

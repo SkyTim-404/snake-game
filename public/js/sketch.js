@@ -22,8 +22,19 @@ let board;
 
 async function setup() {
     createCanvas(canvasSize+detailBoardSize, canvasSize);
+    button = createButton("Delete Model Data");
+    button.position(canvasSize+detailBoardSize/3, canvasSize*9/10);
+    button.size(100, 50);
+    button.mousePressed(() => {
+        board.deleteData();
+    });
     board = new Board(properties, gameDataFilename, modelDataFilename);
-    await board.loadData();
+    try {
+        await board.loadData();
+    }
+    catch (error) {
+        board.saveData();
+    }
     started = true;
 }
 

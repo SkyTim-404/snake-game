@@ -151,13 +151,32 @@ class Board {
         await this.model.load(this.modelDataFilename);
     }
 
+    deleteData() {
+        let del = true;
+        fetch(window.location.href + "delete", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                delete: del
+            })
+        })
+        .catch(err => console.log("error: " + err));
+        this.model = new QNet(11, 16, 16, 3);
+        this.maxScore = 0;
+        this.numOfGames = 0;
+        this.reset();
+    }
+
     saveGameData(filename) {
         let data = {
             maxScore: this.maxScore,
             numOfGames: this.numOfGames,
             filename: filename
         };
-        fetch("http://localhost:3000/game-data", {
+        fetch(window.location.href + "game-data", {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json',
@@ -169,7 +188,7 @@ class Board {
     }
 
     async loadGameData(filename) {
-        let res = await fetch("http://localhost:3000/model-data?" + new URLSearchParams({
+        let res = await fetch(window.location.href + "model-data?" + new URLSearchParams({
             filename: filename
         }), {
             headers: {

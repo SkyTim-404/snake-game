@@ -6,7 +6,7 @@ const dir = "./data/";
 
 router.get("/", (req, res) => {
     let filename = req.query.filename;
-    if (!fs.existsSync(dir)){
+    if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir);
     }
     if (!fs.existsSync(dir+filename)) {
@@ -23,7 +23,7 @@ router.post("/", (req, res) => {
     delete model.filename;
     delete model.relu;
     //check dir exists
-    if (!fs.existsSync(dir)){
+    if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir);
     }
     //write file
