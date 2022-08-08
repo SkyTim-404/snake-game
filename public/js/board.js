@@ -1,11 +1,13 @@
 class Board {
-    constructor(properties, learningRate, gamma) {
+    constructor(properties, gameDataFilename, modelDataFilename) {
         this.properties = properties;
+        this.gameDataFilename = gameDataFilename;
+        this.modelDataFilename = modelDataFilename;
         let snakeStartPosition = new Position(7, 7);
         let snakeStartLength = 3;
         this.snake = new Snake(this.properties, snakeStartPosition, snakeStartLength);
         this.food = new Food(this.properties);
-        this.model = new QNet(learningRate, gamma, 11, 16, 16, 3);
+        this.model = new QNet(11, 16, 16, 3);
         this.maxScore = 0;
         this.numOfGames = 0;
         this.reset();
@@ -29,7 +31,10 @@ class Board {
             let nextStateOutput = this.model.forward(this.getState());
             this.model.backward(currStateOutput, nextStateOutput, movement, response);
         }
-        this.maxScore = max(this.maxScore, this.getScore());
+        if (this.getScore() > this.maxScore) {
+            this.maxScore = this.getScore();
+            this.saveData();
+        }
     }
 
     updatePastMovements(movement) {
@@ -134,5 +139,47 @@ class Board {
         text("Score: " + this.getScore(), 610, 50);
         text("Max Score: " + this.maxScore, 610, 100);
         text("No. of Games: \n" + this.numOfGames, 610, 150);
+    }
+
+    saveData() {
+        this.saveGameData(this.gameDataFilename);
+        this.model.save(this.modelDataFilename);
+    }
+
+    async loadData() {
+        await this.loadGameData(this.gameDataFilename);
+        await this.model.load(this.modelDataFilename);
+    }
+
+    saveGameData(filename) {
+        let data = {
+            maxScore: this.maxScore,
+            numOfGames: this.numOfGames,
+            filename: filename
+        };
+        fetch("http://localhost:3000/game-data", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .catch(err => console.log("error: " + err));
+    }
+
+    async loadGameData(filename) {
+        let res = await fetch("http://localhost:3000/model-data?" + new URLSearchParams({
+            filename: filename
+        }), {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+        let data = await res.json();
+        for (let property in data) {
+            this[property] = data[property];
+        }
     }
 }

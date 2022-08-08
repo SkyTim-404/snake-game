@@ -8,23 +8,27 @@ const boxSize = 20;
 const detailBoardSize = 300;
 const baseSpeed = 3;
 
-// model parameters
-const gamma = 0.9;
-const learningRate = 0.001;
+// filename
+const modelDataFilename = "model-data.json";
+const gameDataFilename = "game-data.json";
 
 // global parameters (do not touch)
 let showSnakeData = false;
+let showBoard = true;
 let currentDirection = Direction.RIGHT;
 let properties = new Properties(canvasSize, boxSize);
+let started = false;
 let board;
 
-function setup() {
+async function setup() {
     createCanvas(canvasSize+detailBoardSize, canvasSize);
-    board = new Board(properties, learningRate, gamma);
-    // saveModel(board.model, "model.json");
+    board = new Board(properties, gameDataFilename, modelDataFilename);
+    await board.loadData();
+    started = true;
 }
 
 function draw() {
+    if (!started) return;
     background(15); // Black
     fill(0, 255, 0); // light green
     rect(canvasSize, 0, detailBoardSize, canvasSize);
@@ -34,7 +38,7 @@ function draw() {
     if (showSnakeData) board.showSnakeDetails();
     else board.showGameScore();
     if (humanPlaying) board.snake.setDirection(currentDirection); // player only change snake direction once per frame
-    board.show();
+    if (showBoard) board.show();
     board.update(humanPlaying);
 }
 
@@ -65,6 +69,9 @@ function keyPressed() {
             break;
         case 80: // Key: p
             humanPlaying = !humanPlaying;
+            break;
+        case 83: // Key: s
+            showBoard = !showBoard;
             break;
         default:
             break;

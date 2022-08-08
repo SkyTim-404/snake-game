@@ -5,9 +5,9 @@ const Reward = {
 }
 
 class QNet {
-    constructor(learningRate, gamma, inNodes, h1Nodes, h2Nodes, outNodes) {
-        this.lr = learningRate;
-        this.gamma = gamma;
+    constructor(inNodes, h1Nodes, h2Nodes, outNodes) {
+        this.lr = 0.001;
+        this.gamma = 0.9;
         this.inNodes = inNodes;
         this.h1Nodes = h1Nodes;
         this.h2Nodes = h2Nodes;
@@ -69,18 +69,39 @@ class QNet {
     }
 
     save(filename) {
-        
+        this.filename = filename;
+        fetch("http://localhost:3000/model-data", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(this)
+        })
+        .catch(err => console.log("error: " + err));
     }
 
-    load(filename) {
-        
+    async load(filename) {
+        let data = await loadModelData(filename);
+        for (let property in data) {
+            this[property] = data[property];
+            if (data[property].mathjs) this[property] = math.matrix(this[property].data);
+        }
     }
 }
 
-function saveModel(model, filename) {
+function saveModelData(model, filename) {
     model.save(filename);
 }
 
-function loadModel(filename) {
-
+async function loadModelData(filename) {
+    let res = await fetch("http://localhost:3000/model-data?" + new URLSearchParams({
+        filename: filename
+    }), {
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+    })
+    return res.json();
 }
