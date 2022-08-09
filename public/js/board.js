@@ -188,7 +188,7 @@ class Board {
     }
 
     async loadGameData(filename) {
-        let res = await fetch(window.location.href + "model-data?" + new URLSearchParams({
+        let res = await fetch(window.location.href + "game-data?" + new URLSearchParams({
             filename: filename
         }), {
             headers: {
