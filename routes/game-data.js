@@ -14,7 +14,7 @@ router.get("/", (req, res) => {
             if (err) console.error(err);
         });
     }
-    res.send(require("../" + dir + filename));
+    res.send(JSON.parse(fs.readFileSync(dir + filename, 'utf-8')));
 });
 
 router.post("/", (req, res) => {
