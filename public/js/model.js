@@ -1,7 +1,9 @@
 const Reward = {
     EAT: 10,
     DEATH: -10,
-    LOOP: -2,
+    LOOP: -3,
+    TIME: -6,
+    CHANGE_DIRECTION: 1,
 }
 
 class QNet {

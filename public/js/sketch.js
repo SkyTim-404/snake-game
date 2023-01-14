@@ -79,10 +79,10 @@ function keyPressed() {
             showSnakeData = !showSnakeData;
             break;
         case 80: // Key: p
-            humanPlaying = !humanPlaying;
+            // humanPlaying = !humanPlaying;
             break;
         case 83: // Key: s
-            showBoard = !showBoard;
+            // showBoard = !showBoard;
             break;
         default:
             break;

@@ -30,10 +30,10 @@ class Board {
             let response = this.moveSnake();
             let nextStateOutput = this.model.forward(this.getState());
             this.model.backward(currStateOutput, nextStateOutput, movement, response);
-        }
-        if (this.getScore() > this.maxScore) {
-            this.maxScore = this.getScore();
-            this.saveData();
+            if (this.getScore() >= this.maxScore) {
+                this.maxScore = this.getScore();
+                this.saveData();
+            }
         }
     }
 
@@ -42,7 +42,7 @@ class Board {
         if (this.pastMovements.length > 4) this.pastMovements.shift();
     }
 
-    checkPastMovementsEquals() {
+    checkLooping() {
         if (this.pastMovements.length < 4) return false;
         if (this.pastMovements[0] === Movement.STRAIGHT) return false;
         let isEqual = true;
@@ -52,21 +52,28 @@ class Board {
         return isEqual;
     }
 
+    checkChangeDirection() {
+        if (this.pastMovements.length < 4) return false;
+        return (this.pastMovements[0] !== this.pastMovements[1]);
+    }
+
     moveSnake() {
         let reward = 0;
         let gameEnd = false;
         if (this.snake.onFood(this.food)) {
-            reward = Reward.EAT;
+            reward += Reward.EAT;
             this.snake.eat(this.food);
             this.food.reset(this.snake.positions);
             this.timer = 0;
         }
         else {
-            reward = this.checkPastMovementsEquals() ? Reward.LOOP : Reward.LOOP * this.timer/this.timeLimit();
+            reward += this.checkLooping() ? Reward.LOOP : 0;
+            reward += this.checkChangeDirection() ? Reward.CHANGE_DIRECTION : 0;
+            reward += Reward.TIME * this.timer/this.timeLimit();
             this.snake.move();
         }
         if (this.snake.isDead() || this.checkTimeLimit()) {
-            reward = Reward.DEATH;
+            reward += Reward.DEATH;
             gameEnd = true;
             this.reset();
         }
@@ -83,6 +90,8 @@ class Board {
     }
 
     reset() {
+        this.loadData(false);
+        console.log("main thread");
         this.timer = 0;
         this.numOfGames += 1;
         this.pastMovements = [];
@@ -146,9 +155,10 @@ class Board {
         this.model.save(this.modelDataFilename);
     }
 
-    async loadData() {
-        await this.loadGameData(this.gameDataFilename);
+    async loadData(loadNumOfGames=true) {
+        await this.loadGameData(this.gameDataFilename, loadNumOfGames);
         await this.model.load(this.modelDataFilename);
+        console.log("Loaded game data");
     }
 
     deleteData() {
@@ -187,7 +197,7 @@ class Board {
         .catch(err => console.log("error: " + err));
     }
 
-    async loadGameData(filename) {
+    async loadGameData(filename, loadNumOfGames) {
         let res = await fetch(window.location.href + "game-data?" + new URLSearchParams({
             filename: filename
         }), {
@@ -198,6 +208,9 @@ class Board {
         });
         let data = await res.json();
         for (let property in data) {
+            if (!loadNumOfGames) {
+                if (property == "numOfGames") continue;
+            }
             this[property] = data[property];
         }
     }
